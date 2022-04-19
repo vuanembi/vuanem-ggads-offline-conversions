@@ -10,8 +10,6 @@ on:
 concurrency: ${{ github.ref }}
 
 env:
-  ENV_KEY: env-vars
-  ENV_FILE: env.yaml
   GCP_SA: bivuanem@voltaic-country-280607.iam.gserviceaccount.com
 
 jobs:
@@ -33,16 +31,6 @@ jobs:
       - id: set-fn-name
         name: Set Function Name
         run: echo "::set-output name=fn-name::${{ env.FUNCTION_NAME}}"
-
-      - name: Create ${{ env.ENV_KEY }}
-        run: |
-          echo "ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}" >> ${{ env.ENV_FILE }}
-
-      - name: Upload ${{ env.ENV_FILE }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.ENV_KEY }}
-          path: ${{ env.ENV_FILE }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -94,16 +82,3 @@ jobs:
           --allow-unauthenticated
           --no-user-output-enabled
           --service-account=${{ env.GCP_SA }}
-          --env-vars-file=${{ env.ENV_FILE }}
-
-  clean-up:
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: always()
-    steps:
-      - run: echo "" > ${{ env.ENV_FILE }}
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.ENV_KEY }}
-          path: ${{ env.ENV_FILE }}

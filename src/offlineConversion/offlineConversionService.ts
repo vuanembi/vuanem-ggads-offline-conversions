@@ -46,12 +46,12 @@ const transform = (data: Data[]): ConversionData[] =>
         'Conversion Name': 'Offline Conversion',
     }));
 
-const offlineConversionService = (day = 1) =>
-    get<Data>({
-        query,
-        params: { dt: dayjs.utc().subtract(day, 'day').format('YYYY-MM-DD') },
-    })
+const offlineConversionService = async (day = 1): Promise<[string, string]> => {
+    const dt = dayjs.utc().subtract(day, 'day').format('YYYY-MM-DD');
+
+    return get<Data>({ query, params: { dt } })
         .then(transform)
-        .then((data) => ['data.csv', parse(data, { fields })]);
+        .then((data) => [`${dt}.csv`, parse(data, { fields })]);
+};
 
 export default offlineConversionService;

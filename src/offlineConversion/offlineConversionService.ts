@@ -38,7 +38,7 @@ const fields = [
 const transform = (data: Data[]): ConversionData[] =>
     data.map(({ dt, gclid, value }) => ({
         'Google Click ID': gclid,
-        'Conversion Time': dayjs(dt.value).utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+        'Conversion Time': dayjs(dt.value).utc().format('YYYY-MM-DDTHH:mm:ss'),
         'Conversion Value': value,
         'Conversion Currency': 'VND',
         'Conversion Name': 'Offline Conversion',

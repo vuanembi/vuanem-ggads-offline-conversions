@@ -4,7 +4,6 @@
     "dependencies": {
         "@google-cloud/bigquery": "^5.11.0",
         "@google-cloud/functions-framework": "^3.0.0",
-        "axios": "^0.26.0",
         "dayjs": "^1.10.8",
         "json2csv": "^5.0.7"
     },

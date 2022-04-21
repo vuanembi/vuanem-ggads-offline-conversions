@@ -27,7 +27,7 @@ const query = `
     WHERE EXTRACT(DATE FROM dt) = @dt
     `;
 
-const fields = [
+const fields: (keyof ConversionData)[] = [
     'Google Click ID',
     'Conversion Time',
     'Conversion Value',
@@ -38,7 +38,9 @@ const fields = [
 const transform = (data: Data[]): ConversionData[] =>
     data.map(({ dt, gclid, value }) => ({
         'Google Click ID': gclid,
-        'Conversion Time': dayjs(dt.value).utc().format('YYYY-MM-DDTHH:mm:ss'),
+        'Conversion Time': dayjs(dt.value)
+            .utc()
+            .format('YYYY-MM-DDTHH:mm:ssZZ'),
         'Conversion Value': value,
         'Conversion Currency': 'VND',
         'Conversion Name': 'Offline Conversion',

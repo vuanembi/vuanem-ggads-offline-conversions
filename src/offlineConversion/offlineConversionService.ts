@@ -1,14 +1,16 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { parse } from 'json2csv';
+import { BigQueryTimestamp } from '@google-cloud/bigquery';
 
 import get from '../db/bigquery';
 
 dayjs.extend(utc);
 
 type Data = {
+    dt: BigQueryTimestamp;
     gclid: string;
-    TRANDATE: string;
+    phone: Buffer;
     value: number;
 };
 
@@ -25,21 +27,31 @@ const query = `
     WHERE EXTRACT(DATE FROM dt) = @dt
     `;
 
+const fields: (keyof ConversionData)[] = [
+    'Google Click ID',
+    'Conversion Time',
+    'Conversion Value',
+    'Conversion Currency',
+    'Conversion Name',
+];
+
 const transform = (data: Data[]): ConversionData[] =>
-    data.map(({ gclid, TRANDATE, value }) => ({
+    data.map(({ dt, gclid, value }) => ({
         'Google Click ID': gclid,
-        'Conversion Time': TRANDATE,
+        'Conversion Time': dayjs(dt.value)
+            .utc()
+            .format('YYYY-MM-DDTHH:mm:ssZZ'),
         'Conversion Value': value,
         'Conversion Currency': 'VND',
-        'Conversion Name': '.',
+        'Conversion Name': 'Offline Conversion',
     }));
 
-const offlineConversionService = (day = 1): Promise<[string, string]> =>
-    get<Data>({
-        query,
-        params: { dt: dayjs.utc().subtract(day, 'day').format('YYYY-MM-DD') },
-    })
+const offlineConversionService = async (day = 1): Promise<[string, string]> => {
+    const dt = dayjs.utc().subtract(day, 'day').format('YYYY-MM-DD');
+
+    return get<Data>({ query, params: { dt } })
         .then(transform)
-        .then((data) => ['file.csv', parse({ data })]);
+        .then((data) => [`${dt}.csv`, parse(data, { fields })]);
+};
 
 export default offlineConversionService;
